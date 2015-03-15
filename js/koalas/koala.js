@@ -166,7 +166,7 @@ var koala = {
 
       var percent = 1 - d3.sum(splitableByLayer) / splitableTotal;
       if (percent >= nextPercent) {
-        onEvent('PercentClear', Math.round(nextPercent * 100));
+        onEvent('PercentClear', Math.round(nextPercent * 100));//notneeded
         nextPercent += 0.05;
       }
     }
