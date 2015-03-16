@@ -89,6 +89,7 @@ var koala = {
         edy = this.y - endPoint[1],
         sdx = this.x - startPoint[0],
         sdy = this.y - startPoint[1],
+
         r2  = this.size / 2;
 
     r2 = r2 * r2; // Radius squared

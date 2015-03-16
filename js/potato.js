@@ -9,6 +9,23 @@ var koala_test = {
 };
 
 (function(){
+    function array2d(w, h) {
+        console.log("creating array");
+        var a = [];
+        return function(x, y, v) {
+            //console.log("setting",v, "at",x,y);
+            if (x < 0 || y < 0) return void 0;
+            if (arguments.length === 3) {
+                // set
+                return a[w * x + y] = v;
+            } else if (arguments.length === 2) {
+                // get
+                return a[w * x + y];
+            } else {
+                throw new TypeError("Bad number of arguments");
+            }
+        }
+    }
     function avgColor(x, y, z, w) {
         return [
             (x[0] + y[0] + z[0] + w[0]) / 4,
@@ -18,6 +35,7 @@ var koala_test = {
     };
 
     function Circle(vis, xi, yi, size, color, children, layer, onSplit) {
+        console.log("loc:",xi,yi,size,color);
         this.vis = vis;
         this.x = size * (xi + 0.5);
         this.y = size * (yi + 0.5);
@@ -25,8 +43,8 @@ var koala_test = {
         this.color = color;
         this.rgb = d3.rgb(color[0], color[1], color[2]);
         this.children = children;
-        this.layer = layer;
-        this.onSplit = onSplit;
+        //this.layer = layer;
+        //this.onSplit = onSplit;
     };
 
     Circle.prototype.isSplitable = function() {
@@ -55,9 +73,10 @@ var koala_test = {
     }
 
     Circle.addToVis = function(vis, circles, init) {
+        console.log("adding ", circles);
         var circle = vis.selectAll('.nope').data(circles)
             .enter().append('circle');
-
+        console.log("circle",circle);
         if (init) {
             // Setup the initial state of the initial circle
             circle = circle
@@ -66,7 +85,7 @@ var koala_test = {
                 .attr('r', 4)
                 .attr('fill', '#ffffff')
                 .transition()
-                .duration(1000);
+                .duration(300);
         } else {
             // Setup the initial state of the opened circles
             circle = circle
@@ -76,7 +95,7 @@ var koala_test = {
                 .attr('fill', function(d) { return String(d.parent.rgb); })
                 .attr('fill-opacity', 0.68)
                 .transition()
-                .duration(300);
+                .duration(100);
         }
 
         // Transition the to the respective final state
@@ -120,6 +139,7 @@ var koala_test = {
         var size = minSize;
 
         // Start off by populating the base (leaf) layer
+        console.log("populating baselayer")
         var xi, yi, t = 0, color;
         for (yi = 0; yi < dim; yi++) {
             for (xi = 0; xi < dim; xi++) {
@@ -144,17 +164,91 @@ var koala_test = {
                     c4 = prevLayer(2 * xi + 1, 2 * yi + 1);
                     color = avgColor(c1.color, c2.color, c3.color, c4.color);
                     c1.parent = c2.parent = c3.parent = c4.parent = layer(xi, yi,
-                        new Circle(vis, xi, yi, size, color, [c1, c2, c3, c4], currentLayer, onSplit)
+                        new Circle(vis, xi, yi, size, color, [c1, c2, c3, c4] )//,currentLayer, onSplit)
                     );
                 }
             }
-            splitableByLayer.push(dim * dim);
-            splitableTotal += dim * dim;
+           // splitableByLayer.push(dim * dim);
+            //splitableTotal += dim * dim;
             currentLayer++;
             prevLayer = layer;
         }
 
         // Create the initial circle
         Circle.addToVis(vis, [layer(0, 0)], true);
+
+        // Interaction helper functions
+        function splitableCircleAt(pos) {
+            var xi = Math.floor(pos[0] / minSize),
+                yi = Math.floor(pos[1] / minSize),
+                circle = finestLayer(xi, yi);
+            if (!circle) return null;
+            while (circle && !circle.isSplitable()) circle = circle.parent;
+            return circle || null;
+        }
+
+        function intervalLength(startPoint, endPoint) {
+            var dx = endPoint[0] - startPoint[0],
+                dy = endPoint[1] - startPoint[1];
+
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function breakInterval(startPoint, endPoint, maxLength) {
+            var breaks = [],
+                length = intervalLength(startPoint, endPoint),
+                numSplits = Math.max(Math.ceil(length / maxLength), 1),
+                dx = (endPoint[0] - startPoint[0]) / numSplits,
+                dy = (endPoint[1] - startPoint[1]) / numSplits,
+                startX = startPoint[0],
+                startY = startPoint[1];
+
+            for (var i = 0; i <= numSplits; i++) {
+                breaks.push([startX + dx * i, startY + dy * i]);
+            }
+            return breaks;
+        }
+
+        function findAndSplit(startPoint, endPoint) {
+            var breaks = breakInterval(startPoint, endPoint, 4);
+            var circleToSplit = []
+
+            for (var i = 0; i < breaks.length - 1; i++) {
+                var sp = breaks[i],
+                    ep = breaks[i+1];
+
+                var circle = splitableCircleAt(ep);
+                if (circle && circle.isSplitable() && circle.checkIntersection(sp, ep)) {
+                    circle.split();
+                }
+            }
+        }
+
+        // Handle mouse events
+        var prevMousePosition = null;
+        function onMouseMove() {
+            var mousePosition = d3.mouse(vis.node());
+
+            // Do nothing if the mouse point is not valid
+            if (isNaN(mousePosition[0])) {
+                prevMousePosition = null;
+                return;
+            }
+
+            if (prevMousePosition) {
+                findAndSplit(prevMousePosition, mousePosition);
+            }
+            prevMousePosition = mousePosition;
+            d3.event.preventDefault();
+        }
+        d3.select(document.body)
+            .on('mousemove', onMouseMove);
+    }
+})();
+
+
+(function (){
+    function mappedAvgColor(/*arguments*/){
+        ;
     }
 })();

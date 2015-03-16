@@ -7,9 +7,11 @@
     <script type="text/javascript" src="js/d3/d3.js"></script>
     <script type="text/javascript" src="js/potato.js"></script>
     <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/parameters.css">
 </head>
 <body>
 <div id="dots"></div>
+
 <script>
 
     function goToHidden(location, string) {
@@ -23,12 +25,15 @@
         location.href = '//' + location.host + location.pathname + '?' + utf8_to_b64(string);
     };
 
-    var file = "images/potato-first.png"
+    //var file = "images/potato-first.png"
+    var file = "images/koalas.jpg"
     var img = new Image();
     img.onload= function(){
         var colorData;
         try{
-            colorData = koala_test.loadImage(this)
+            console.log("koala_test.loadImage(this)");
+            colorData = koala_test.loadImage(this);
+            console.log(colorData);
         } catch(error){
             //You are not a potato!
         }
