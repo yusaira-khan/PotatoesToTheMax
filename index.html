@@ -11,34 +11,25 @@
 </head>
 <body>
 <div id="dots"></div>
+<div id="dis"></div>
 
 <script>
-
-    function goToHidden(location, string) {
-        function utf8_to_b64(str) {
-            return window.btoa(unescape(encodeURIComponent(str)));
-        }
-
-        function b64_to_utf8 (str) {
-            return decodeURIComponent(escape(window.atob(str)));
-        }
-        location.href = '//' + location.host + location.pathname + '?' + utf8_to_b64(string);
-    };
-
     //var file = "images/potato-first.png"
-    var file = "images/koalas.jpg"
+    var file = "images/koalas.jpg";
     var img = new Image();
     img.onload= function(){
         var colorData;
         try{
-            console.log("koala_test.loadImage(this)");
-            colorData = koala_test.loadImage(this);
-            console.log(colorData);
+            //console.log("koala_test.loadImage(this)");
+            //colorData = koala_test.loadImage(this);
+            colorData = potato.loadImage(this);
+            //console.log(colorData);
         } catch(error){
             //You are not a potato!
         }
         if (colorData){
-            koala_test.makeCircles("#dots", colorData);
+            //koala_test.makeCircles("#dots", colorData);
+            potato.makeBlebs(colorData);
         }
     };
     img.src = file;
